@@ -6,3 +6,4 @@ repos:
       entry: flake8
       language: system  # uses your virtualenv’s flake8
       types: [python]
+      exclude: migrations/

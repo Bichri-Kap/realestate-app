@@ -17,19 +17,28 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 from properties.views import PropertyViewSet
-from accounts.views import UserProfileViewSet
+from accounts.views import UserViewSet
 from bookings.views import BookingViewSet
-from reviews.views import ReviewViewSet
+from reviews.views import PropertyReviewViewSet
 
 
 router = routers.DefaultRouter()
 router.register(r'properties', PropertyViewSet)
-router.register(r'users', UserProfileViewSet)
+router.register(r'users', UserViewSet)
 router.register(r'bookings', BookingViewSet)
-router.register(r'reviews', ReviewViewSet)
+router.register(r'reviews', PropertyReviewViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include(router.urls)),
+
+    # JWT Auth
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
