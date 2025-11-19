@@ -1,0 +1,8 @@
+repos:
+- repo: local
+  hooks:
+    - id: flake8
+      name: flake8 (PEP8)
+      entry: flake8
+      language: system  # uses your virtualenv’s flake8
+      types: [python]
