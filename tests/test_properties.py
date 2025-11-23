@@ -30,3 +30,32 @@ class PropertyTests(APITestCase):
         response = self.client.get(f"/api/properties/{self.property.id}/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["title"], "Test Property")
+
+
+class PropertyPermissionsTest(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="user1", password="pass123")
+        self.agent = User.objects.create_user(username="agent", password="pass123", is_agent=True)
+        self.client = APIClient()
+
+        self.agent_token = str(RefreshToken.for_user(self.agent).access_token)
+        self.user_token = str(RefreshToken.for_user(self.user).access_token)
+
+        # Sample property
+        self.property = Property.objects.create(title="Test House", description="Nice", price=100000, agent=self.agent)
+
+    def test_public_can_list_properties(self):
+        response = self.client.get("/api/properties/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_agent_can_create_property(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.agent_token}")
+        data = {"title": "New House", "description": "Nice", "price": 200000, "agent": self.agent.id}
+        response = self.client.post("/api/properties/", data)
+        self.assertEqual(response.status_code, 201)
+
+    def test_regular_user_cannot_create_property(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.user_token}")
+        data = {"title": "User House", "description": "Nope", "price": 50000, "agent": self.user.id}
+        response = self.client.post("/api/properties/", data)
+        self.assertEqual(response.status_code, 403)

@@ -10,16 +10,66 @@ User = get_user_model()
 
 class BookingTests(APITestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username="testuser", password="password123")
+        self.user = User.objects.create_user(
+            username="testuser", password="password123"
+        )
         self.client = APIClient()
         refresh = RefreshToken.for_user(self.user)
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(refresh.access_token)}")
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f"Bearer {str(refresh.access_token)}"
+        )
 
-        self.property = Property.objects.create(title="Sample Property", description="Nice", price=50000)
+        self.property = Property.objects.create(
+            title="Sample Property", description="Nice", price=50000
+        )
         self.booking = Booking.objects.create(
-            user=self.user, property=self.property, date=date.today(), time=time(hour=14, minute=0))
+            user=self.user,
+            property=self.property,
+            date=date.today(),
+            time=time(hour=14, minute=0),
+        )
 
     def test_booking_list(self):
         response = self.client.get("/api/bookings/")
         self.assertEqual(response.status_code, 200)
         self.assertTrue(len(response.data) >= 1)
+
+
+class BookingPermissionsTest(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="user1", password="pass123")
+        self.user2 = User.objects.create_user(username="user2", password="pass123")
+        self.admin = User.objects.create_superuser(
+            username="admin", password="admin123"
+        )
+        self.client = APIClient()
+
+        self.user_token = str(RefreshToken.for_user(self.user).access_token)
+        self.admin_token = str(RefreshToken.for_user(self.admin).access_token)
+
+        self.property = Property.objects.create(
+            title="House", description="Nice", price=100000, agent=self.user
+        )
+
+        self.booking = Booking.objects.create(
+            user=self.user, property=self.property, date=date.today(), time=time(10, 0)
+        )
+
+    def test_user_can_view_own_booking(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.user_token}")
+        response = self.client.get(f"/api/bookings/{self.booking.id}/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_cannot_view_others_booking(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.user_token}")
+        # Create booking for user2
+        booking2 = Booking.objects.create(
+            user=self.user2, property=self.property, date=date.today(), time=time(11, 0)
+        )
+        response = self.client.get(f"/api/bookings/{booking2.id}/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_admin_can_view_any_booking(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
+        response = self.client.get(f"/api/bookings/{self.booking.id}/")
+        self.assertEqual(response.status_code, 200)
