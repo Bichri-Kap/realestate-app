@@ -50,13 +50,17 @@ class PropertyPermissionsTest(APITestCase):
 
     def test_agent_can_create_property(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.agent_token}")
-        data = {"title": "New House", "description": "Nice", "price": 200000, "agent": self.agent.id}
+        data = {
+            "title": "New House",
+            "description": "Nice",
+            "price": 200000,
+        }
         response = self.client.post("/api/properties/", data)
         self.assertEqual(response.status_code, 201)
 
     def test_regular_user_cannot_create_property(self):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.user_token}")
-        data = {"title": "User House", "description": "Nope", "price": 50000, "agent": self.user.id}
+        data = {"title": "User House", "description": "Nope", "price": 50000}
         response = self.client.post("/api/properties/", data)
         self.assertEqual(response.status_code, 403)
 
