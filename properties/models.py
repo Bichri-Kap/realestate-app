@@ -40,6 +40,11 @@ class Property(models.Model):
     price = models.DecimalField(max_digits=12, decimal_places=2)
 
     province = models.ForeignKey(Province, on_delete=models.SET_NULL, null=True)
+    status = models.CharField(max_length=20, default="available")
+    bedrooms = models.IntegerField(default=1)
+    bathrooms = models.IntegerField(default=1)
+    address = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=100, default="")
     area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True)
 
     description = models.TextField()
@@ -64,6 +69,7 @@ class Property(models.Model):
 class PropertyImage(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to="property_images/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Image for {self.property.title}"

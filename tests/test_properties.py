@@ -59,3 +59,31 @@ class PropertyPermissionsTest(APITestCase):
         data = {"title": "User House", "description": "Nope", "price": 50000, "agent": self.user.id}
         response = self.client.post("/api/properties/", data)
         self.assertEqual(response.status_code, 403)
+
+
+class PropertySearchOrderingPaginationTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="agent",
+            password="pass123",
+            is_agent=True
+        )
+        self.client.force_authenticate(self.user)
+
+        Property.objects.create(title="Luxury House", price=500000, city="Lusaka")
+        Property.objects.create(title="Affordable Apartment", price=150000, city="Kitwe")
+        Property.objects.create(title="Modern Condo", price=300000, city="Lusaka")
+
+    def test_search(self):
+        response = self.client.get("/api/properties/?search=luxury")
+        self.assertEqual(len(response.data["results"]), 1)
+
+    def test_ordering(self):
+        response = self.client.get("/api/properties/?ordering=price")
+        prices = [item["price"] for item in response.data["results"]]
+        self.assertEqual(prices, sorted(prices))
+
+    def test_pagination(self):
+        response = self.client.get("/api/properties/")
+        self.assertIn("results", response.data)
+        self.assertTrue(len(response.data["results"]) <= 10)
