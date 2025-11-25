@@ -18,13 +18,27 @@ class IsOwnerOrAdmin(BasePermission):
     Admins can access everything.
     """
 
+    def has_permission(self, request, view):
+        # Allow admins always
+        if request.user and request.user.is_staff:
+            return True
+
+        # Allow authenticated users for safe methods and POST (create)
+        if request.method in SAFE_METHODS or request.method == "POST":
+            return request.user and request.user.is_authenticated
+
+        return True  # fallback for safety
+
     def has_object_permission(self, request, view, obj):
+        # Admins can access everything
         if request.user.is_staff:
             return True
-        # If the object is a User instance, compare directly
+
+        # If object is a User instance
         if isinstance(obj, request.user.__class__):
             return obj == request.user
-        # Otherwise, fallback to obj.user
+
+        # For bookings and other objects that have a `.user`
         return getattr(obj, 'user', None) == request.user
 
 
