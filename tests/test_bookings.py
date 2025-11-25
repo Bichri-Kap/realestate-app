@@ -73,3 +73,23 @@ class BookingPermissionsTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.admin_token}")
         response = self.client.get(f"/api/bookings/{self.booking.id}/")
         self.assertEqual(response.status_code, 200)
+
+    def test_user_can_create_booking(self):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.user_token}")
+        data = {
+            "property_id": self.property.id,
+            "date": "2025-12-01",
+            "time": "14:00:00",
+            "message": "I am interested in this property"
+        }
+        response = self.client.post("/api/bookings/", data)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["user"]["id"], self.user.id)
+        self.assertEqual(response.data["property"]["id"], self.property.id)
+
+    def test_agent_can_list_bookings_for_their_property(self):
+        agent = self.property.agent
+        refresh = RefreshToken.for_user(agent)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(refresh.access_token)}")
+        response = self.client.get("/api/bookings/?property_id=" + str(self.property.id))
+        self.assertEqual(response.status_code, 200)
