@@ -48,6 +48,9 @@ function App() {
 
     fetchProperties();
   }, []);
+  <div className="bg-indigo-500 text-white p-4 rounded-lg">
+    Tailwind is working!
+  </div>
 
   return (
     <div className="min-h-screen bg-gray-100">

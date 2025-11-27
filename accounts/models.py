@@ -14,9 +14,9 @@ class User(AbstractUser):
 class Agent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     company_name = models.CharField(max_length=255, blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-
-    # Agent rating from user reviews later
     rating = models.FloatField(default=0.0)
 
     def __str__(self):
