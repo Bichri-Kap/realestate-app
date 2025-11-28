@@ -31,13 +31,15 @@ function App() {
             ...img,
             image: img.image.startsWith("http")
               ? img.image
-              : `http://localhost:8000${img.image}`
+              : `http://localhost:8000${img.image}`,
           })) ?? [{ image: stockImages[index % stockImages.length] }],
         }));
 
         setProperties(normalized);
 
-        if (normalized.length > 0) setFeaturedProperty(normalized[0]);
+        if (normalized.length > 0) {
+          setFeaturedProperty(normalized[0]);
+        }
 
       } catch (error) {
         console.error("Error fetching properties:", error);
@@ -48,9 +50,6 @@ function App() {
 
     fetchProperties();
   }, []);
-  <div className="bg-indigo-500 text-white p-4 rounded-lg">
-    Tailwind is working!
-  </div>
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -60,8 +59,12 @@ function App() {
           <h1 className="text-2xl font-bold text-blue-600">Visual Estate</h1>
           <nav>
             <ul className="flex space-x-4">
-              <li><Link to="/" className="text-gray-700 hover:text-blue-600">Home</Link></li>
-              <li><Link to="/properties" className="text-gray-700 hover:text-blue-600">Properties</Link></li>
+              <li>
+                <Link to="/" className="text-gray-700 hover:text-blue-600">Home</Link>
+              </li>
+              <li>
+                <Link to="/properties" className="text-gray-700 hover:text-blue-600">Properties</Link>
+              </li>
             </ul>
           </nav>
         </div>
@@ -70,8 +73,14 @@ function App() {
       {/* ROUTES */}
       <main className="container mx-auto px-4 py-12">
         <Routes>
-          <Route path="/" element={<Home properties={properties} featuredProperty={featuredProperty} />} />
-          <Route path="/properties" element={<Properties properties={properties} stockImages={stockImages} />} />
+          <Route
+            path="/"
+            element={<Home properties={properties} featuredProperty={featuredProperty} />}
+          />
+          <Route
+            path="/properties"
+            element={<Properties properties={properties} stockImages={stockImages} />}
+          />
           <Route path="/property/:id" element={<PropertyDetail />} />
         </Routes>
       </main>
