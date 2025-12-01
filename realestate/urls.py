@@ -24,7 +24,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from properties.views import PropertyViewSet
+from properties.views import PropertyViewSet, ListingTypeViewSet, PropertyTypeViewSet
 from accounts.views import UserViewSet
 from bookings.views import BookingViewSet
 from reviews.views import PropertyReviewViewSet
@@ -35,6 +35,8 @@ router.register(r'properties', PropertyViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'bookings', BookingViewSet)
 router.register(r'reviews', PropertyReviewViewSet)
+router.register(r'listing-types', ListingTypeViewSet, basename='listingtype')
+router.register(r'property-types', PropertyTypeViewSet, basename='propertytype')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

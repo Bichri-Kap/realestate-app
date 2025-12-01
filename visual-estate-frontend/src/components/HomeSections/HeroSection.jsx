@@ -14,7 +14,7 @@ export default function HeroSection({ featuredProperty }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <section className="relative h-[70vh] flex flex-col">
+    <section className="relative w-full h-[70vh] flex flex-col">
       {/* Background image */}
       <div className="absolute inset-0 -z-10">
         <img
@@ -63,12 +63,12 @@ export default function HeroSection({ featuredProperty }) {
       </header>
 
       {/* Hero content */}
-      <div className="flex flex-col justify-center items-start px-6 lg:px-12 h-full mt-10">
-        <h1 className="text-white text-4xl md:text-5xl font-bold max-w-2xl leading-tight">
+      <div className="flex flex-col justify-center items-start px-6 lg:px-24 h-full mt-10 max-w-screen-xl mx-auto">
+        <h1 className="text-white text-4xl md:text-5xl font-bold leading-tight">
           Discover Your Next Home
         </h1>
 
-        <p className="text-white/90 text-lg md:text-xl max-w-2xl mt-4">
+        <p className="text-white/90 text-lg md:text-xl mt-4 max-w-2xl">
           Explore beautiful properties across Zambia and find a place that suits your lifestyle.
         </p>
 

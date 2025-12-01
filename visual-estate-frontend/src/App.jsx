@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 import Home from "./pages/Home";
 import Properties from "./pages/Properties";
@@ -53,30 +53,25 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-600">Visual Estate</h1>
-          <nav>
-            <ul className="flex space-x-4">
-              <li>
-                <Link to="/" className="text-gray-700 hover:text-blue-600">Home</Link>
-              </li>
-              <li>
-                <Link to="/properties" className="text-gray-700 hover:text-blue-600">Properties</Link>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </header>
-
       {/* ROUTES */}
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4">
+        {/* Hero must be OUTSIDE the container */}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Home
+              properties={properties}
+              featuredProperty={featuredProperty}
+            />
+          }
+        />
+      </Routes>
+      </main>
+
+      {/* Put container ONLY around internal pages */}
+      <main className="container mx-auto px-4">
         <Routes>
-          <Route
-            path="/"
-            element={<Home properties={properties} featuredProperty={featuredProperty} />}
-          />
           <Route
             path="/properties"
             element={<Properties properties={properties} stockImages={stockImages} />}

@@ -1,8 +1,15 @@
 from django.contrib import admin
-from .models import Property, PropertyImage, PropertyCategory, Province, Area
+from .models import (
+    Property,
+    PropertyImage,
+    PropertyType,
+    Province,
+    Area,
+    ListingType,
+    PropertyFeature,
+)
 
 
-# This lets you edit Property Images inline for each property
 class PropertyImageInline(admin.TabularInline):
     model = PropertyImage
     extra = 1
@@ -10,11 +17,78 @@ class PropertyImageInline(admin.TabularInline):
 
 @admin.register(Property)
 class PropertyAdmin(admin.ModelAdmin):
-    list_display = ('title', 'price', 'city', 'bedrooms')
+    list_display = ("title", "listing_type", "price", "city", "bedrooms", "status")
     inlines = [PropertyImageInline]
+
+    list_filter = (
+        "availability_status",
+        "listing_type",
+        "province",
+        "area",
+        "repossessed",
+        "estate",
+        "cluster",
+        "retirement",
+        "on_auction",
+    )
+
+    fieldsets = (
+        (
+            "Basic Info",
+            {
+                "fields": (
+                    "title",
+                    "description",
+                    "listing_type",
+                    "property_type",
+                    "status",
+                    "availability_status",
+                )
+            },
+        ),
+        ("Location", {"fields": ("province", "city", "area", "address")}),
+        (
+            "Physical Specs",
+            {
+                "fields": (
+                    "bedrooms",
+                    "bathrooms",
+                    "size",
+                    "floor_size",
+                    "erf_size",
+                    "parking",
+                )
+            },
+        ),
+        (
+            "Features & Amenities",
+            {"fields": ("pet_friendly", "pool", "garden", "flatlet", "features")},
+        ),
+        (
+            "Special Flags",
+            {
+                "fields": (
+                    "on_show",
+                    "on_auction",
+                    "repossessed",
+                    "retirement",
+                    "estate",
+                    "cluster",
+                )
+            },
+        ),
+        ("Pricing", {"fields": ("min_price", "max_price", "rent_amount")}),
+        (
+            "Paperwork",
+            {"fields": ("title_deed_available", "council_approval", "caveat_notes")},
+        ),
+        ("Agent", {"fields": ("agent",)}),
+    )
 
 
 admin.site.register(PropertyImage)
-admin.site.register(PropertyCategory)
+admin.site.register(PropertyType)
 admin.site.register(Province)
 admin.site.register(Area)
+admin.site.register(ListingType)
+admin.site.register(PropertyFeature)

@@ -6,9 +6,8 @@ from rest_framework.response import Response
 
 from properties.validators import validate_image_file
 from realestate.permissions import IsAgentOrReadOnly
-
-from .models import Property, PropertyImage
-from .serializers import PropertyImageSerializer, PropertySerializer
+from .models import Property, PropertyImage, ListingType, PropertyType
+from .serializers import PropertySerializer, PropertyImageSerializer, ListingTypeSerializer, PropertyTypeSerializer
 
 
 class PropertyViewSet(viewsets.ModelViewSet):
@@ -16,27 +15,42 @@ class PropertyViewSet(viewsets.ModelViewSet):
     serializer_class = PropertySerializer
     permission_classes = [IsAgentOrReadOnly]
 
-    filter_backends = [
-        DjangoFilterBackend,
-        filters.SearchFilter,
-        filters.OrderingFilter,
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = [
+        "listing_type",
+        "property_type",
+        "min_price",
+        "max_price",
+        "rent_amount",
+        "bedrooms",
+        "bathrooms",
+        "parking",
+        "floor_size",
+        "erf_size",
+        "features",
+        "status",
+        "availability_status",
+        "repossessed",
+        "estate",
+        "cluster",
+        "retirement",
+        "on_auction",
+        "agent",
+        "province",
+        "area",
     ]
 
-    filterset_fields = ["price", "status", "bedrooms", "bathrooms", "agent"]
     search_fields = ["title", "description", "city", "address"]
-    ordering_fields = ["price", "created_at"]
+    ordering_fields = ["price", "min_price", "max_price", "rent_amount", "created_at"]
     ordering = ["-created_at"]
 
     @action(detail=True, methods=["post"], permission_classes=[IsAgentOrReadOnly])
     def upload_image(self, request, pk=None):
         property_obj = self.get_object()
-
         image_files = request.FILES.getlist("images")
 
         if not image_files:
-            return Response(
-                {"error": "No images provided."}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "No images provided."}, status=status.HTTP_400_BAD_REQUEST)
 
         created_images = []
         errors = []
@@ -53,22 +67,18 @@ class PropertyViewSet(viewsets.ModelViewSet):
         if errors:
             response_data["errors"] = errors
 
-        status_code = (
-            status.HTTP_201_CREATED if created_images else status.HTTP_400_BAD_REQUEST
-        )
+        status_code = status.HTTP_201_CREATED if created_images else status.HTTP_400_BAD_REQUEST
         return Response(response_data, status=status_code)
 
     def perform_create(self, serializer):
-        """
-        Set the `agent` field to the currently authenticated user when creating
-        a new `Property` instance.
-
-        This overrides DRF's `perform_create` hook on `ModelViewSet` so that
-        clients do not supply the `agent` value directly. The view's
-        `permission_classes` (for example, `IsAgentOrReadOnly`) should ensure
-        only authorized users (agents) can create properties.
-
-        Args:
-            serializer: The serializer instance being saved for the Property.
-        """
         serializer.save(agent=self.request.user)
+
+
+class ListingTypeViewSet(viewsets.ModelViewSet):
+    queryset = ListingType.objects.all()
+    serializer_class = ListingTypeSerializer
+
+
+class PropertyTypeViewSet(viewsets.ModelViewSet):
+    queryset = PropertyType.objects.all()
+    serializer_class = PropertyTypeSerializer
