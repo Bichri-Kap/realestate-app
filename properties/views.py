@@ -28,7 +28,6 @@ class PropertyViewSet(viewsets.ModelViewSet):
         "floor_size",
         "erf_size",
         "features",
-        "status",
         "availability_status",
         "repossessed",
         "estate",

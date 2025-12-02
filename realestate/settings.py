@@ -82,6 +82,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
 
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:.*$",
+]
+
 ROOT_URLCONF = 'realestate.urls'
 
 MEDIA_URL = "/media/"

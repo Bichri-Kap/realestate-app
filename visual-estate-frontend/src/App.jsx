@@ -53,10 +53,10 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* ROUTES */}
-      <main className="container mx-auto px-4">
-        {/* Hero must be OUTSIDE the container */}
+
+      {/* ALL ROUTES MUST BE DECLARED TOGETHER */}
       <Routes>
+        {/* Home (Hero section sits inside this component) */}
         <Route
           path="/"
           element={
@@ -66,19 +66,26 @@ function App() {
             />
           }
         />
-      </Routes>
-      </main>
 
-      {/* Put container ONLY around internal pages */}
-      <main className="container mx-auto px-4">
-        <Routes>
-          <Route
-            path="/properties"
-            element={<Properties properties={properties} stockImages={stockImages} />}
-          />
-          <Route path="/property/:id" element={<PropertyDetail />} />
-        </Routes>
-      </main>
+        {/* Internal pages */}
+        <Route
+          path="/properties"
+          element={
+            <div className="container mx-auto px-4">
+              <Properties properties={properties} stockImages={stockImages} />
+            </div>
+          }
+        />
+
+        <Route
+          path="/property/:id"
+          element={
+            <div className="container mx-auto px-4">
+              <PropertyDetail />
+            </div>
+          }
+        />
+      </Routes>
 
       {/* Footer */}
       <footer className="bg-white shadow mt-12">

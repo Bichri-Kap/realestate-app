@@ -103,7 +103,6 @@ class Property(models.Model):
     cluster = models.BooleanField(default=False)
 
     # Status
-    status = models.CharField(max_length=20, default="available")
     availability_status = models.CharField(
         max_length=20, choices=AVAILABILITY_CHOICES, default="available"
     )

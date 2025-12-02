@@ -1,15 +1,16 @@
-import HeroSection from '../components/HomeSections/HeroSection';
-import HeroSearch from '../components/HomeSections/HeroSearch';
-import SearchSection from '../components/HomeSections/SearchSection';
-import FeaturedListings from '../components/HomeSections/FeaturedListings';
-import CTASection from '../components/HomeSections/CTASection';
+import HeroSection from "../components/HomeSections/HeroSection";
+import CategoriesSection from "../components/HomeSections/CategoriesSection";
+import FeaturedListings from "../components/HomeSections/FeaturedListings";
+import WhyChooseUsSection from "../components/HomeSections/WhyChooseUsSection";
+import CTASection from "../components/HomeSections/CTASection";
 
-export default function Home({ properties, featuredProperty, onSearch }) {
+export default function Home({ featuredProperty, properties }) {
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <HeroSection featuredProperty={featuredProperty} />
-      <HeroSearch onSearch={onSearch} />
+    <div className="min-h-screen">
+      <HeroSection featuredProperty={featuredProperty} properties={properties} />
+      <CategoriesSection />
       <FeaturedListings properties={properties} />
+      <WhyChooseUsSection />
       <CTASection />
     </div>
   );

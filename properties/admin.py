@@ -17,7 +17,7 @@ class PropertyImageInline(admin.TabularInline):
 
 @admin.register(Property)
 class PropertyAdmin(admin.ModelAdmin):
-    list_display = ("title", "listing_type", "price", "city", "bedrooms", "status")
+    list_display = ("title", "listing_type", "price", "city", "bedrooms", "availability_status")
     inlines = [PropertyImageInline]
 
     list_filter = (
@@ -41,7 +41,6 @@ class PropertyAdmin(admin.ModelAdmin):
                     "description",
                     "listing_type",
                     "property_type",
-                    "status",
                     "availability_status",
                 )
             },

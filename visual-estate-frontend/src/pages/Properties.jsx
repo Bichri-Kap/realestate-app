@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import SearchBar from "../components/SearchBar";
+import Navbar from "../components/HomeSections/Navbar";
 
 export default function Properties({ properties = [], stockImages = [] }) {
   const [filteredProperties, setFilteredProperties] = useState(properties);
@@ -24,6 +25,7 @@ export default function Properties({ properties = [], stockImages = [] }) {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
+      <Navbar />
       <h2 className="text-3xl font-bold mb-6 text-center">All Properties</h2>
 
       {/* Search Bar */}

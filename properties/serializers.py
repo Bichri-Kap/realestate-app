@@ -98,7 +98,6 @@ class PropertySerializer(serializers.ModelSerializer):
             "address",
             "bedrooms",
             "bathrooms",
-            "status",
             "availability_status",
             "images",
             "reviews",
