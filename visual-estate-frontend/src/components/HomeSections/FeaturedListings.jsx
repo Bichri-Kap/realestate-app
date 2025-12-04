@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import PropertyCard from "../PropertyCard";
 import hero1 from "../../assets/roofs-small-blue-yellow-houses-with-copyspace-sky.jpg";
 import hero2 from "../../assets/3d-house-model-with-modern-architecture.jpg";
@@ -13,6 +14,11 @@ export default function FeaturedListings({ properties = [] }) {
     return <p className="text-gray-500 text-center py-10">No properties available.</p>;
   }
 
+  // Sort properties by price descending (or other criteria) and take top 3
+  const topProperties = [...properties]
+    .sort((a, b) => (b.price ?? 0) - (a.price ?? 0))
+    .slice(0, 3);
+
   return (
     <section className="container mx-auto px-4 sm:px-6 lg:px-12 py-12">
       <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 text-center">
@@ -20,8 +26,7 @@ export default function FeaturedListings({ properties = [] }) {
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
-        {properties.slice(0, 6).map((property, index) => {
-          // Ensure property has images, otherwise use fallback
+        {topProperties.map((property, index) => {
           const safeProperty = {
             ...property,
             images:
@@ -33,6 +38,7 @@ export default function FeaturedListings({ properties = [] }) {
             bedrooms: property?.bedrooms ?? 0,
             bathrooms: property?.bathrooms ?? 0,
             features: property?.features ?? [],
+            status: property?.status ?? "available",
           };
 
           return (
@@ -45,6 +51,16 @@ export default function FeaturedListings({ properties = [] }) {
             </motion.div>
           );
         })}
+      </div>
+
+      {/* View more button */}
+      <div className="text-center mt-8">
+        <Link
+          to="/properties"
+          className="inline-block px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-700 transition"
+        >
+          View More Properties
+        </Link>
       </div>
     </section>
   );
