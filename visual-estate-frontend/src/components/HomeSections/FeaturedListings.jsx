@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import PropertyCard from "../PropertyCard";
-import hero1 from "../../assets/roofs-small-blue-yellow-houses-with-copyspace-sky.jpg";
-import hero2 from "../../assets/3d-house-model-with-modern-architecture.jpg";
-import hero3 from "../../assets/analog-landscape-city-with-buildings.jpg";
-import hero4 from "../../assets/new-home-keys-plan-table-with-defocused-couple.jpg";
-import hero5 from "../../assets/villa-house-model-key-drawing-retro-desktop-real-estate-sale-concept.jpg";
+import hero1 from "../../assets/image_1.jpg";
+import hero2 from "../../assets/image_2.jpg";
+import hero3 from "../../assets/image_3.jpg";
+import hero4 from "../../assets/image_4.jpg";
+import hero5 from "../../assets/image_5.jpg";
 
 const fallbackImages = [hero1, hero2, hero3, hero4, hero5];
 
