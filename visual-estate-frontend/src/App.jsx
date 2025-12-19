@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Routes, Route } from "react-router-dom";
 
+import Header from "./components/layout/Header";
+import Footer from "./components/layout/Footer";
+
 import Home from "./pages/Home";
 import Properties from "./pages/Properties";
 import PropertyDetail from "./components/PropertyDetail";
@@ -37,9 +40,7 @@ function App() {
 
         setProperties(normalized);
 
-        if (normalized.length > 0) {
-          setFeaturedProperty(normalized[0]);
-        }
+        if (normalized.length > 0) setFeaturedProperty(normalized[0]);
 
       } catch (error) {
         console.error("Error fetching properties:", error);
@@ -53,46 +54,41 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <Header />
 
-      {/* ALL ROUTES MUST BE DECLARED TOGETHER */}
-      <Routes>
-        {/* Home (Hero section sits inside this component) */}
-        <Route
-          path="/"
-          element={
-            <Home
-              properties={properties}
-              featuredProperty={featuredProperty}
-            />
-          }
-        />
+      <div className="pt-0"> {/* pushes content below fixed header */}
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Home
+                properties={properties}
+                featuredProperty={featuredProperty}
+              />
+            }
+          />
 
-        {/* Internal pages */}
-        <Route
-          path="/properties"
-          element={
-            <div className="container mx-auto px-4">
-              <Properties properties={properties} stockImages={stockImages} />
-            </div>
-          }
-        />
+          <Route
+            path="/properties"
+            element={
+              <div className="container mx-auto px-4">
+                <Properties properties={properties} stockImages={stockImages} />
+              </div>
+            }
+          />
 
-        <Route
-          path="/property/:id"
-          element={
-            <div className="container mx-auto px-4">
-              <PropertyDetail />
-            </div>
-          }
-        />
-      </Routes>
+          <Route
+            path="/property/:id"
+            element={
+              <div className="container mx-auto px-4">
+                <PropertyDetail />
+              </div>
+            }
+          />
+        </Routes>
+      </div>
 
-      {/* Footer */}
-      <footer className="bg-white shadow mt-12">
-        <div className="container mx-auto px-4 py-6 text-center text-gray-600">
-          &copy; 2025 Visual Estate. All rights reserved.
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
