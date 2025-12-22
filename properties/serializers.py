@@ -61,6 +61,7 @@ class PropertySerializer(serializers.ModelSerializer):
     agent = AgentSerializer(read_only=True)
     listing_type = ListingTypeSerializer(read_only=True)
     features = PropertyFeatureSerializer(many=True, read_only=True)
+    short_description = serializers.SerializerMethodField()
 
     # Accept IDs for writable nested relationships
     province_id = serializers.PrimaryKeyRelatedField(
@@ -91,6 +92,7 @@ class PropertySerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "title",
+            "short_description",
             "description",
             "price",
             "rent_amount",
@@ -130,3 +132,8 @@ class PropertySerializer(serializers.ModelSerializer):
             "council_approval",
             "caveat_notes",
         ]
+
+    def get_short_description(self, obj):
+        if obj.short_description:
+            return obj.short_description
+        return obj.description[:160] + "…" if obj.description else ""

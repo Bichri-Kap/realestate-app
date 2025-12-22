@@ -53,6 +53,11 @@ class Property(models.Model):
 
     # Identification
     title = models.CharField(max_length=255)
+    short_description = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Short marketing description shown on listing cards"
+    )
     description = models.TextField()
 
     # Listing type

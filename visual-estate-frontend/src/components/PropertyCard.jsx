@@ -13,32 +13,32 @@ export default function PropertyCard({ property }) {
   const displayPrice = property.price ?? property.rent_amount;
 
   const statusColors = {
-    available: "bg-green-500 text-white",
+    available: "bg-green-600 text-white",
     reserved: "bg-yellow-500 text-white",
-    sold: "bg-gray-600 text-white",
+    sold: "bg-gray-700 text-white",
     processing: "bg-blue-600 text-white",
   };
 
   return (
-    <Link to={`/property/${property.id}`}>
-      <Card className="overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-xl rounded-xl">
+    <Link to={`/property/${property.id}`} className="block h-full">
+      <Card className="h-full overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-2xl rounded-2xl bg-white">
 
-        {/* Image Section */}
-        <div className="relative aspect-[4/3] overflow-hidden">
+        {/* Image */}
+        <div className="relative h-56 overflow-hidden">
           <img
             src={
               property?.images?.[0]?.image ||
               "https://images.pexels.com/photos/259588/pexels-photo-259588.jpeg"
             }
             alt={property.title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
 
-          {/* Status Badge */}
+          {/* Status */}
           {property.status && (
             <span
               className={cn(
-                "absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold shadow",
+                "absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold shadow-md",
                 statusColors[property.status]
               )}
             >
@@ -48,41 +48,49 @@ export default function PropertyCard({ property }) {
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="p-5 flex flex-col gap-3">
 
           {/* Title */}
-          <h3 className="text-lg font-semibold text-gray-800 line-clamp-1">
+          <h3 className="text-lg font-semibold text-gray-900 leading-tight line-clamp-2">
             {property.title || "Untitled Property"}
           </h3>
 
-          {/* City */}
-          <p className="text-gray-500 text-sm mb-2 line-clamp-1">
+          {/* Location */}
+          <p className="text-sm text-gray-500 line-clamp-1">
             {property.city || "Location not specified"}
           </p>
 
           {/* Price */}
-          <p className="text-indigo-600 font-bold text-lg">
+          <p className="text-indigo-600 font-bold text-xl">
             {displayPrice
               ? `ZMW ${Number(displayPrice).toLocaleString()}`
               : "Contact for price"}
           </p>
 
-          {/* Attributes Icons */}
-          <div className="flex flex-wrap gap-4 text-gray-700 text-sm mt-3">
+          {/* Description Preview */}
+          {property.description && (
+            <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
+              {property.short_description}
+            </p>
+          )}
+
+          {/* Attributes */}
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-700 pt-2">
+
             <div className="flex items-center gap-1">
               <IoBedOutline className="w-4 h-4 text-gray-500" />
-              <span>{property.bedrooms ?? 0}</span>
+              <span>{property.bedrooms ?? 0} Beds</span>
             </div>
 
             <div className="flex items-center gap-1">
               <LiaBathSolid className="w-4 h-4 text-gray-500" />
-              <span>{property.bathrooms ?? 0}</span>
+              <span>{property.bathrooms ?? 0} Baths</span>
             </div>
 
             {property.parking != null && (
               <div className="flex items-center gap-1">
                 <TbCarGarage className="w-4 h-4 text-gray-500" />
-                <span>{property.parking}</span>
+                <span>{property.parking} Parking</span>
               </div>
             )}
 
@@ -101,19 +109,18 @@ export default function PropertyCard({ property }) {
             )}
           </div>
 
-          {/* Features Pills */}
+          {/* Features */}
           {property.features?.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-3">
+            <div className="flex flex-wrap gap-2 pt-2">
               {property.features.slice(0, 3).map((feature) => (
                 <span
                   key={feature.id}
-                  className="bg-gray-200 text-gray-800 text-xs font-medium px-2 py-1 rounded"
+                  className="bg-gray-100 text-gray-700 text-xs font-medium px-2 py-1 rounded-md"
                 >
                   {feature.name}
                 </span>
               ))}
 
-              {/* "+X more" indicator */}
               {property.features.length > 3 && (
                 <span className="text-xs text-gray-500">
                   +{property.features.length - 3} more

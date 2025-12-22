@@ -55,7 +55,7 @@ class PropertyAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Basic Info", {
             "fields": (
-                "title", "description",
+                "title", "description", "short_description",
                 "listing_type", "property_type",
                 "availability_status"
             )

@@ -30,18 +30,20 @@ function App() {
 
         const normalized = propertyArray.map((p, index) => ({
           ...p,
-          images: p.images?.map(img => ({
-            ...img,
-            image: img.image.startsWith("http")
-              ? img.image
-              : `http://localhost:8000${img.image}`,
-          })) ?? [{ image: stockImages[index % stockImages.length] }],
+          images:
+            p.images?.map((img) => ({
+              ...img,
+              image: img.image.startsWith("http")
+                ? img.image
+                : `http://localhost:8000${img.image}`,
+            })) ?? [{ image: stockImages[index % stockImages.length] }],
         }));
 
         setProperties(normalized);
 
-        if (normalized.length > 0) setFeaturedProperty(normalized[0]);
-
+        if (normalized.length > 0) {
+          setFeaturedProperty(normalized[0]);
+        }
       } catch (error) {
         console.error("Error fetching properties:", error);
       } finally {
@@ -56,8 +58,9 @@ function App() {
     <div className="min-h-screen">
       <Header />
 
-      <div className="pt-0"> {/* pushes content below fixed header */}
+      <div className="pt-0">
         <Routes>
+          {/* HOME */}
           <Route
             path="/"
             element={
@@ -68,15 +71,13 @@ function App() {
             }
           />
 
+          {/* ✅ FULL-WIDTH PROPERTIES PAGE */}
           <Route
             path="/properties"
-            element={
-              <div className="container mx-auto px-4">
-                <Properties properties={properties} stockImages={stockImages} />
-              </div>
-            }
+            element={<Properties properties={properties} />}
           />
 
+          {/* PROPERTY DETAIL (still boxed, which is good UX) */}
           <Route
             path="/property/:id"
             element={
