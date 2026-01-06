@@ -10,7 +10,7 @@ import { RxDimensions } from "react-icons/rx";
 import { AiOutlineColumnWidth } from "react-icons/ai";
 
 export default function PropertyCard({ property }) {
-  const displayPrice = property.price ?? property.rent_amount;
+  const displayPrice = property.price_display ?? property.rent_amount;
 
   const statusColors = {
     available: "bg-green-600 text-white",
@@ -18,6 +18,19 @@ export default function PropertyCard({ property }) {
     sold: "bg-gray-700 text-white",
     processing: "bg-blue-600 text-white",
   };
+
+  // Listing and property type labels
+  const listingLabel = property.listing_type?.name || "";
+  const typeLabelMap = {
+    house: "House",
+    apartment: "Apartment",
+    townhouse: "Townhouse",
+    vacant_land: "Vacant Land",
+    farm: "Farm",
+    commercial: "Commercial",
+    industrial: "Industrial",
+  };
+  const typeLabel = property.property_type_label || "";
 
   return (
     <Link to={`/property/${property.id}`} className="block h-full">
@@ -50,6 +63,22 @@ export default function PropertyCard({ property }) {
         {/* Content */}
         <div className="p-5 flex flex-col gap-3">
 
+          {/* Labels: Listing Type & Property Type */}
+          {(listingLabel || typeLabel) && (
+            <div className="flex gap-2 mb-1 flex-wrap">
+              {listingLabel && (
+                <span className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded">
+                  {listingLabel}
+                </span>
+              )}
+              {typeLabel && (
+                <span className="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded">
+                  {typeLabel}
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Title */}
           <h3 className="text-lg font-semibold text-gray-900 leading-tight line-clamp-2">
             {property.title || "Untitled Property"}
@@ -68,7 +97,7 @@ export default function PropertyCard({ property }) {
           </p>
 
           {/* Description Preview */}
-          {property.description && (
+          {property.short_description && (
             <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
               {property.short_description}
             </p>
@@ -77,15 +106,19 @@ export default function PropertyCard({ property }) {
           {/* Attributes */}
           <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-700 pt-2">
 
-            <div className="flex items-center gap-1">
-              <IoBedOutline className="w-4 h-4 text-gray-500" />
-              <span>{property.bedrooms ?? 0} Beds</span>
-            </div>
+            {property.bedrooms != null && (
+              <div className="flex items-center gap-1">
+                <IoBedOutline className="w-4 h-4 text-gray-500" />
+                <span>{property.bedrooms} Beds</span>
+              </div>
+            )}
 
-            <div className="flex items-center gap-1">
-              <LiaBathSolid className="w-4 h-4 text-gray-500" />
-              <span>{property.bathrooms ?? 0} Baths</span>
-            </div>
+            {property.bathrooms != null && (
+              <div className="flex items-center gap-1">
+                <LiaBathSolid className="w-4 h-4 text-gray-500" />
+                <span>{property.bathrooms} Baths</span>
+              </div>
+            )}
 
             {property.parking != null && (
               <div className="flex items-center gap-1">

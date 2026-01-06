@@ -64,7 +64,7 @@ export default function PropertyDetails() {
       </div>
     );
 
-  const displayPrice = property.price;
+  const displayPrice = property.price_display;
 
   const statusColors = {
     available: "bg-green-600 text-white",

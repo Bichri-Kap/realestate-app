@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
@@ -30,7 +31,8 @@ class PropertyType(models.Model):
 
 
 class ListingType(models.Model):
-    name = models.CharField(max_length=50)  # For Sale, For Rent
+    name = models.CharField(max_length=50)
+    slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
@@ -53,11 +55,7 @@ class Property(models.Model):
 
     # Identification
     title = models.CharField(max_length=255)
-    short_description = models.CharField(
-        max_length=255,
-        blank=True,
-        help_text="Short marketing description shown on listing cards"
-    )
+    short_description = models.CharField(max_length=255, blank=True)
     description = models.TextField()
 
     # Listing type
@@ -71,7 +69,7 @@ class Property(models.Model):
     area = models.ForeignKey(Area, on_delete=models.SET_NULL, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
 
-    # Physical specifications
+    # Physical specs
     property_type = models.CharField(
         max_length=50,
         choices=[
@@ -93,13 +91,13 @@ class Property(models.Model):
     erf_size = models.FloatField(null=True, blank=True)
     parking = models.IntegerField(null=True, blank=True)
 
-    # Features & amenities
+    # Features
     pet_friendly = models.BooleanField(default=False)
     pool = models.BooleanField(default=False)
     garden = models.BooleanField(default=False)
     flatlet = models.BooleanField(default=False)
 
-    # Special flags
+    # Flags
     on_show = models.BooleanField(default=False)
     on_auction = models.BooleanField(default=False)
     repossessed = models.BooleanField(default=False)
@@ -112,45 +110,73 @@ class Property(models.Model):
         max_length=20, choices=AVAILABILITY_CHOICES, default="available"
     )
 
-    # Sale / Rent specific prices
+    # Pricing
     price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     min_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     max_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-    rent_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)  # For Rent
+    rent_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
 
-    # Paperwork tracking
+    # Paperwork
     title_deed_available = models.BooleanField(default=False)
     council_approval = models.BooleanField(default=False)
     caveat_notes = models.TextField(blank=True, null=True)
 
-    # Linking with agent
-    agent = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="properties")
+    # Agent
+    agent = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name="properties"
+    )
 
     # Features
     features = models.ManyToManyField(PropertyFeature, blank=True, related_name="properties")
 
-    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def update_price(self):
-        """
-        Sync the real database field `price` with the logic used for choosing price.
-        """
-        if self.listing_type and self.listing_type.name.lower() == "for rent":
-            self.price = self.rent_amount
-        else:
-            self.price = self.max_price or self.min_price
+    def clean(self):
+        errors = {}
+
+        if self.listing_type:
+            slug = self.listing_type.slug.lower()
+
+            if slug == "rent" and not self.rent_amount:
+                errors["rent_amount"] = "Rent amount is required for rental properties."
+
+            if slug == "sale":
+                if not any([self.price, self.min_price, self.max_price]):
+                    errors["price"] = "Sale properties must have a price or price range."
+                if self.min_price and self.max_price and self.min_price > self.max_price:
+                    errors["max_price"] = "Max price must be greater than min price."
+
+        if errors:
+            raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
-        self.update_price()
+        if not self.agent:
+            pass
+        self.full_clean()
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
 
+    def get_display_price(self):
+        """
+        Return the most appropriate price for display.
+        Priority:
+        1. max_price
+        2. min_price
+        3. price
+        """
+        if self.max_price:
+            return self.max_price
+        if self.min_price:
+            return self.min_price
+        return self.price
+
 
 class PropertyImage(models.Model):
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="images")
+    property = models.ForeignKey(
+        Property, on_delete=models.CASCADE, related_name="images"
+    )
     image = models.ImageField(upload_to="property_images/")
     uploaded_at = models.DateTimeField(auto_now_add=True)
 

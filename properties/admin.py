@@ -21,7 +21,7 @@ class PropertyAdmin(admin.ModelAdmin):
         "title",
         "listing_type",
         "property_type",
-        "price",
+        "display_price",
         "city",
         "province",
         "area",
@@ -94,6 +94,12 @@ class PropertyAdmin(admin.ModelAdmin):
 
         ("Agent", {"fields": ("agent",)}),
     )
+
+    def display_price(self, obj):
+        price = obj.get_display_price()
+        return price if price else "Contact for price"
+
+    display_price.short_description = "Price"
 
 
 admin.site.register(PropertyImage)

@@ -1,130 +1,222 @@
-from rest_framework.test import APITestCase, APIClient
-from django.contrib.auth import get_user_model
+import pytest
+from django.core.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
-from properties.models import Property, ListingType
 
-User = get_user_model()
-
-
-class PropertyTests(APITestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(
-            username="testuser", password="password123"
-        )
-        refresh = RefreshToken.for_user(self.user)
-        self.token = str(refresh.access_token)
-        self.client = APIClient()
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
-
-        # Listing type for sale
-        self.listing_type = ListingType.objects.create(name="For Sale")
-
-        # Sample property
-        self.property = Property.objects.create(
-            title="Test Property",
-            description="Nice property",
-            min_price=100000,
-            listing_type=self.listing_type,
-        )
-
-    def test_property_list(self):
-        response = self.client.get("/api/properties/")
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(len(response.data) >= 1)
-
-    def test_property_detail(self):
-        response = self.client.get(f"/api/properties/{self.property.id}/")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["title"], "Test Property")
+from properties.models import Property
 
 
-class PropertyPermissionsTest(APITestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(username="user1", password="pass123")
-        self.agent = User.objects.create_user(
-            username="agent", password="pass123", is_agent=True
-        )
-        self.client = APIClient()
+# -------------------------------------------------------------------
+# PROPERTY API TESTS
+# -------------------------------------------------------------------
 
-        self.agent_token = str(RefreshToken.for_user(self.agent).access_token)
-        self.user_token = str(RefreshToken.for_user(self.user).access_token)
+@pytest.mark.django_db
+def test_property_list(api_client, create_property):
+    create_property()
 
-        self.listing_type = ListingType.objects.create(name="For Sale")
-
-        # Sample property
-        self.property = Property.objects.create(
-            title="Test House",
-            description="Nice",
-            min_price=100000,
-            agent=self.agent,
-            listing_type=self.listing_type,
-        )
-
-    def test_public_can_list_properties(self):
-        response = self.client.get("/api/properties/")
-        self.assertEqual(response.status_code, 200)
-
-    def test_agent_can_create_property(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.agent_token}")
-        data = {
-            "title": "New House",
-            "description": "Nice",
-            "min_price": 200000,
-            "listing_type": self.listing_type.id,
-        }
-        response = self.client.post("/api/properties/", data)
-        self.assertEqual(response.status_code, 201)
-
-    def test_regular_user_cannot_create_property(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.user_token}")
-        data = {
-            "title": "User House",
-            "description": "Nope",
-            "min_price": 50000,
-            "listing_type": self.listing_type.id,
-        }
-        response = self.client.post("/api/properties/", data)
-        self.assertEqual(response.status_code, 403)
+    response = api_client.get("/api/properties/")
+    assert response.status_code == 200
+    assert len(response.data["results"]) >= 1
 
 
-class PropertySearchOrderingPaginationTests(APITestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(
-            username="agent", password="pass123", is_agent=True
-        )
-        self.client.force_authenticate(self.user)
+@pytest.mark.django_db
+def test_property_detail(api_client, create_property):
+    prop = create_property(title="Test Property")
 
-        self.listing_type = ListingType.objects.create(name="For Sale")
+    response = api_client.get(f"/api/properties/{prop.id}/")
+    assert response.status_code == 200
+    assert response.data["title"] == "Test Property"
 
-        Property.objects.create(
-            title="Luxury House",
-            min_price=500000,
-            city="Lusaka",
-            listing_type=self.listing_type,
-        )
-        Property.objects.create(
-            title="Affordable Apartment",
-            min_price=150000,
-            city="Kitwe",
-            listing_type=self.listing_type,
-        )
-        Property.objects.create(
-            title="Modern Condo",
-            min_price=300000,
-            city="Lusaka",
-            listing_type=self.listing_type,
-        )
 
-    def test_search(self):
-        response = self.client.get("/api/properties/?search=luxury")
-        self.assertEqual(len(response.data["results"]), 1)
+# -------------------------------------------------------------------
+# PERMISSIONS
+# -------------------------------------------------------------------
 
-    def test_ordering(self):
-        response = self.client.get("/api/properties/?ordering=min_price")
-        prices = [item["price"] for item in response.data["results"]]
-        self.assertEqual(prices, sorted(prices))
+@pytest.mark.django_db
+def test_public_can_list_properties(api_client):
+    response = api_client.get("/api/properties/")
+    assert response.status_code == 200
 
-    def test_pagination(self):
-        response = self.client.get("/api/properties/")
-        self.assertIn("results", response.data)
-        self.assertTrue(len(response.data["results"]) <= 10)
+
+@pytest.mark.django_db
+def test_agent_can_create_property(
+    agent_client,
+    listing_type_sale,
+    province,
+    area,
+):
+    data = {
+        "title": "New House",
+        "description": "Nice",
+        "listing_type_id": listing_type_sale.id,
+        "province_id": province.id,
+        "city": "Lusaka",
+        "area_id": area.id,
+        "min_price": 200000,
+        "max_price": 400000,
+    }
+
+    response = agent_client.post("/api/properties/", data, format="json")
+    print(response.status_code)
+    print(response.data)
+    assert response.status_code == 201
+
+
+@pytest.mark.django_db
+def test_regular_user_cannot_create_property(
+    api_client,
+    user,
+    listing_type_sale,
+    province,
+    area,
+):
+    token = RefreshToken.for_user(user).access_token
+    api_client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+
+    data = {
+        "title": "User House",
+        "description": "Nope",
+        "listing_type": listing_type_sale.id,
+        "province": province.id,
+        "city": "Lusaka",
+        "area": area.id,
+        "min_price": 50000,
+    }
+
+    response = api_client.post("/api/properties/", data)
+    assert response.status_code == 403
+
+
+# -------------------------------------------------------------------
+# SEARCH, ORDERING, PAGINATION
+# -------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_search(api_client, create_property):
+    create_property(title="Luxury House")
+    create_property(title="Affordable Apartment")
+
+    response = api_client.get("/api/properties/?search=luxury")
+    assert len(response.data["results"]) == 1
+
+
+@pytest.mark.django_db
+def test_ordering(api_client, create_property):
+    create_property(max_price=500000)
+    create_property(max_price=150000)
+    create_property(max_price=300000)
+
+    response = api_client.get("/api/properties/?ordering=price_display")
+    prices = [item["price_display"] for item in response.data["results"]]
+
+    assert prices == sorted(prices)
+
+
+@pytest.mark.django_db
+def test_pagination(api_client, create_property):
+    for _ in range(12):
+        create_property()
+
+    response = api_client.get("/api/properties/")
+    assert "results" in response.data
+    assert len(response.data["results"]) <= 10
+
+
+# -------------------------------------------------------------------
+# MODEL VALIDATION
+# -------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_min_price_cannot_exceed_max_price(
+    listing_type_sale,
+    province,
+    area,
+):
+    prop = Property(
+        title="Invalid Price Property",
+        description="Bad pricing",
+        listing_type=listing_type_sale,
+        province=province,
+        city="Lusaka",
+        area=area,
+        min_price=500000,
+        max_price=300000,
+    )
+
+    with pytest.raises(ValidationError):
+        prop.full_clean()
+
+
+@pytest.mark.django_db
+def test_sale_property_requires_price_or_range(
+    listing_type_sale,
+    province,
+    area,
+):
+    prop = Property(
+        title="Missing Price",
+        description="No price set",
+        listing_type=listing_type_sale,
+        province=province,
+        city="Lusaka",
+        area=area,
+    )
+
+    with pytest.raises(ValidationError):
+        prop.full_clean()
+
+
+@pytest.mark.django_db
+def test_valid_price_range_passes_validation(
+    listing_type_sale,
+    province,
+    area,
+    agent_user,
+):
+    prop = Property(
+        title="Valid Pricing",
+        description="Looks good",
+        listing_type=listing_type_sale,
+        province=province,
+        city="Lusaka",
+        area=area,
+        min_price=300000,
+        max_price=500000,
+        agent=agent_user,
+    )
+
+    prop.full_clean()  # should not raise
+
+
+# -------------------------------------------------------------------
+# PRICE DISPLAY LOGIC
+# -------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_display_price_prefers_max_price(create_property):
+    prop = create_property(
+        min_price=300000,
+        max_price=700000,
+    )
+
+    assert prop.get_display_price() == prop.max_price
+
+
+@pytest.mark.django_db
+def test_display_price_falls_back_to_price(
+    listing_type_sale,
+    province,
+    area,
+    agent_user,
+):
+    prop = Property.objects.create(
+        title="Legacy Price",
+        description="Old logic",
+        listing_type=listing_type_sale,
+        province=province,
+        city="Lusaka",
+        area=area,
+        price=450000,
+        agent=agent_user,
+    )
+
+    assert prop.get_display_price() == prop.price
