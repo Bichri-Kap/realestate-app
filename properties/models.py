@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 
 User = get_user_model()
 
@@ -142,7 +142,10 @@ class Property(models.Model):
 
             if slug == "sale":
                 if not any([self.price, self.min_price, self.max_price]):
-                    errors["price"] = "Sale properties must have a price or price range."
+                    errors[NON_FIELD_ERRORS] = (
+                        "Sale properties must have a price or a price range."
+                    )
+
                 if self.min_price and self.max_price and self.min_price > self.max_price:
                     errors["max_price"] = "Max price must be greater than min price."
 
@@ -150,9 +153,7 @@ class Property(models.Model):
             raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
-        if not self.agent:
-            pass
-        self.full_clean()
+        self.full_clean(exclude=["agent"])
         super().save(*args, **kwargs)
 
     def __str__(self):

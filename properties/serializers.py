@@ -61,7 +61,7 @@ class PropertySerializer(serializers.ModelSerializer):
     area = AreaSerializer(read_only=True)
     agent = AgentSerializer(read_only=True)
     listing_type = ListingTypeSerializer(read_only=True)
-    features = PropertyFeatureSerializer(many=True, read_only=True)
+    features = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     short_description = serializers.SerializerMethodField()
     property_type_label = serializers.SerializerMethodField()
 

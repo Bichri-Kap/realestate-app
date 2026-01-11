@@ -32,6 +32,8 @@ class PropertyAdmin(admin.ModelAdmin):
         "created_at",
     )
 
+    filter_horizontal = ("features",)
+
     list_filter = (
         "availability_status",
         "listing_type",
